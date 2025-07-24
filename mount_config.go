@@ -47,6 +47,10 @@ type MountConfig struct {
 	// performed.
 	DebugLogger *log.Logger
 
+	// If true, no debug logging is performed by default, even if DebugLogger is set.
+	// Debug logging can be enabled after the file system is mounted by calling
+	// EnableDebugLogging() on the file system.
+	DisableDebugLogging bool
 	// Linux only. OS X always behaves as if writeback caching is disabled.
 	//
 	// By default on Linux we allow the kernel to perform writeback caching
@@ -327,4 +331,8 @@ func mapToOptionsString(opts map[string]string) string {
 // Create an options string suitable for passing to the mount helper.
 func (c *MountConfig) toOptionsString() string {
 	return mapToOptionsString(c.toMap())
+}
+
+func (c *MountConfig) shouldDebugLog() bool {
+	return c.DebugLogger != nil && !c.DisableDebugLogging
 }

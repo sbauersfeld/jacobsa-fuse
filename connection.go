@@ -224,7 +224,7 @@ func (c *Connection) debugLog(
 	calldepth int,
 	format string,
 	v ...interface{}) {
-	if c.debugLogger == nil {
+	if !c.cfg.shouldDebugLog() {
 		return
 	}
 
@@ -449,7 +449,7 @@ func (c *Connection) ReadOp() (_ context.Context, op interface{}, _ error) {
 		}
 
 		// Choose an ID for this operation for the purposes of logging, and log it.
-		if c.debugLogger != nil {
+		if c.cfg.shouldDebugLog() {
 			c.debugLog(inMsg.Header().Unique, 1, "<- %s", describeRequest(op))
 		}
 
@@ -543,7 +543,7 @@ func (c *Connection) Reply(ctx context.Context, opErr error) error {
 	logError := c.shouldLogError(op, opErr)
 
 	// Debug logging
-	if c.debugLogger != nil {
+	if c.cfg.shouldDebugLog() {
 		if opErr == nil {
 			c.debugLog(fuseID, 1, "-> %s", describeResponse(op))
 		} else {
@@ -593,4 +593,12 @@ func (c *Connection) close() error {
 	// write, but luckily we exclude the possibility of a race by requiring the
 	// user to respond to all ops first.
 	return c.dev.Close()
+}
+
+func (c *Connection) ToggleDebugLogging(enable bool) {
+	if enable {
+		c.cfg.DisableDebugLogging = false
+	} else {
+		c.cfg.DisableDebugLogging = true
+	}
 }
